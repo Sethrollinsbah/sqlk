@@ -28,6 +28,23 @@ cursor-based selection
 - PostgreSQL client libraries
 - A terminal with Unicode support
 
+### Homebrew
+
+```bash
+brew tap sethrollinsbah/sqlk
+brew install sqlk
+```
+
+The binary will be available at `sqlk`.
+
+### Cargo
+
+```bash
+cargo install sqlk
+```
+
+The binary will be available at `sqlk`.
+
 ### Build from Source
 
 ```bash
@@ -37,6 +54,12 @@ cargo build --release
 ```
 
 The binary will be available at `target/release/sqlk`.
+
+## Plugin
+
+### Neovim
+
+Visit [sqlk.nvim](https://github.com/sethrollinsbah/sqlk.nvim) for installation.
 
 ## Usage
 
