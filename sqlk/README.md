@@ -1,6 +1,6 @@
 # SQLK - Interactive SQL Query Tool
 
-![Alt text](./assets/sqlk-home-screen.png "SQLk Home Screen")
+![Alt text](./../assets/sqlk-home-screen.png "SQLk Home Screen")
 
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/sethrollinsbah/sqlk)](https://rust-reportcard.xuri.me/report/github.com/sethrollinsbah/sqlk) [![Crates.io](https://img.shields.io/crates/v/sqlk.svg)](https://crates.io/crates/sqlk)
 
