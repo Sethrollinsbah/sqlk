@@ -1,0 +1,28 @@
+# config.toml - Configuration file for sqlk
+
+# Environment file path (relative to working directory)
+env_file = ".env.local"
+
+# Matrix animation configuration
+[matrix]
+enabled = true
+duration_ms = 6000
+chars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ01"
+width = 80
+height = 24
+
+# Foreign key relationship configuration
+[foreign_keys]
+enabled = true
+
+# Manual foreign key mappings (optional)
+# Format: "column_name" = "target_table.target_column"
+[foreign_keys.manual_mapping]
+user_id = "users.id"
+product_id = "products.id"
+category_id = "categories.id"
+
+# Database configuration
+[database]
+# Database URL (can be overridden by .env file or DATABASE_URL environment variable)
+url = "postgresql://neondb_owner:npg_ESXR5Qj1kUHP@ep-shy-haze-a4xqkt7n-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"

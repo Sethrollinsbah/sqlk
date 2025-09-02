@@ -1,0 +1,12 @@
+# Environment file path (relative to working directory)
+# These are all of the default options, but configure as you wish
+env_file = ".env"
+
+# Foreign key relationship configuration
+[foreign_keys]
+enabled = true
+
+# Database configuration
+[database]
+# Database URL (can be overridden by .env file or DATABASE_URL environment variable)
+url = "postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"

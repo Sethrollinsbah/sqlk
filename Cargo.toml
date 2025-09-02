@@ -1,0 +1,6 @@
+# root cargo
+[workspace]
+members = ["sqlk"]
+resolver = "3"
+
+
