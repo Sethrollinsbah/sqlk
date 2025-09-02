@@ -1,17 +1,17 @@
 
 [package]
 name = "sqlk"      
-version = "0.1.0"   
+version = "0.1.1"   
 authors = ["Seth <seth@planetbun.com>"] 
 edition = "2024"        
-description = "A short description of your crate" 
+description = "A terminal-based PostgreSQL query execution and visualization tool with vim-like navigation." 
 license = "MIT OR Apache-2.0" 
 repository = "https://github.com/sethrollinsbah/sqlk" # URL of source repo
 # homepage = "https://yourprojecthomepage.com"      # Optional project homepage URL
 # documentation = "https://docs.rs/sqlk"            # Optional docs URL
 readme = "README.md"    
 keywords = ["sql", "cli", "database"]
-categories = ["command-line-utilities"] 
+categories = ["command-line-utilities", "PostgreSQL", "tui"] 
 
 
 [lib]

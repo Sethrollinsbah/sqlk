@@ -1,5 +1,9 @@
 # SQLK - Interactive SQL Query Tool
 
+![Alt text](./assets/sqlk-home-screen.png "SQLk Home Screen")
+
+[![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/sethrollinsbah/sqlk)](https://rust-reportcard.xuri.me/report/github.com/sethrollinsbah/sqlk) [![Crates.io](https://img.shields.io/crates/v/sqlk.svg)](https://crates.io/crates/sqlk)
+
 A terminal-based SQL query execution and visualization tool with vim-like
 navigation and Matrix-style loading animations.
 
@@ -113,6 +117,7 @@ db_type = "PostgreSQL" # optional, SQLk finds database from string
 | `yiw` | Copy current cell |
 | `/` | Search in results |
 | `F` | Foreign key lookup |
+| `c` | Chart mode |
 | `K` | Show cell info |
 | `?` | Show help |
 | `q` or `Esc` | Back to file view |
