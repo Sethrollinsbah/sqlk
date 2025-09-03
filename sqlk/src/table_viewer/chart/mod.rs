@@ -66,8 +66,7 @@ impl TableViewer {
                 let mut temp_items: Vec<_> =
                     sorted_items.iter().take(max_items - 1).cloned().collect();
 
-                if let Some(pos) = temp_items.iter().position(|(l, _)| l == value_to_highlight)
-                {
+                if let Some(pos) = temp_items.iter().position(|(l, _)| l == value_to_highlight) {
                     let highlighted = temp_items.remove(pos);
                     temp_items.insert(0, highlighted);
                 }
@@ -144,7 +143,7 @@ impl TableViewer {
             self.show_chart = false;
             self.chart_data = None;
         } else {
-            let max_items = 20; 
+            let max_items = 20;
 
             let value_to_highlight = self.get_current_cell_value().unwrap_or_default();
 
@@ -169,7 +168,7 @@ impl TableViewer {
             ));
             lines.push("├─────────────────────────────────────────┤".to_string());
 
-            let label_width = width.saturating_sub(25).max(10); 
+            let label_width = width.saturating_sub(25).max(10);
             let bar_char = "█";
 
             for item in &chart_data.items {

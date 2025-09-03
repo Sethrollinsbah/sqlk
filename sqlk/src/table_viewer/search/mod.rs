@@ -1,6 +1,9 @@
 use regex::Regex;
 
-use crate::{table_viewer::{CellPosition, TableViewer}, ui::{ToastType, UI}};
+use crate::{
+    table_viewer::{CellPosition, TableViewer},
+    ui::{ToastType, UI},
+};
 
 #[derive(Debug, Default)]
 pub struct SearchState {
@@ -22,7 +25,7 @@ impl TableViewer {
         let Ok(re) = Regex::new(&format!("(?i){}", term)) else {
             return;
         };
-        
+
         for (row_idx, row) in self.data.rows.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if re.is_match(cell) {
@@ -34,7 +37,10 @@ impl TableViewer {
             }
         }
 
-        ui.add_toast(format!("Found {:?} matches", self.search_state.matches.iter().len()), ToastType::Info);
+        ui.add_toast(
+            format!("Found {:?} matches", self.search_state.matches.iter().len()),
+            ToastType::Info,
+        );
 
         if !self.search_state.matches.is_empty() {
             self.jump_to_match(0);

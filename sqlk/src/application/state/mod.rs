@@ -82,7 +82,7 @@ impl App {
             query_parser: QueryParser::new(),
             query_blocks: Vec::new(),
             is_querying: false,
-            search_cursor_position: 0
+            search_cursor_position: 0,
         };
 
         Ok(app)

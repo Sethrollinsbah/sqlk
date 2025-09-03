@@ -55,7 +55,7 @@ impl ColorCalculator {
                 let b = b1 as f32 + (b2 as f32 - b1 as f32) * factor;
                 Color::Rgb(r as u8, g as u8, b as u8)
             }
-            _ => from, 
+            _ => from,
         }
     }
 }

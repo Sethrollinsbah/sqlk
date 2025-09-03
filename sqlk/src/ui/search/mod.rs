@@ -80,13 +80,11 @@ impl UI {
         f.render_widget(help_text, chunks[2]);
 
         // Position the cursor at the end of the input text
-        f.set_cursor_position(
-            Position {
+        f.set_cursor_position(Position {
             // x-coordinate: start of the block + border + text length
             x: chunks[1].x + app.search_cursor_position + 1,
             // y-coordinate: start of the block + top border
             y: chunks[1].y + 1,
-            }
-        );
+        });
     }
 }
