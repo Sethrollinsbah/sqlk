@@ -1,0 +1,146 @@
+name: Create/Update Homebrew Formula
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  update-brew-tap:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout project repository
+        uses: actions/checkout@v4
+        
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          
+      - name: Install jq for JSON parsing
+        run: brew install jq
+          
+      - name: Get project info and check if release needed
+        id: version-check
+        run: |
+          PROJECT_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
+          VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          VTAG="v${VERSION}"
+          DESC=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].description // empty')
+          HOMEPAGE=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].repository // empty')
+          
+          echo "PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "VTAG=${VTAG}" >> $GITHUB_ENV
+          echo "DESC=${DESC}" >> $GITHUB_ENV
+          echo "HOMEPAGE=${HOMEPAGE}" >> $GITHUB_ENV
+          
+          # Check if tag already exists (fetch all tags first)
+          git fetch --tags
+          if git tag -l "${VTAG}" | grep -q "^${VTAG}$"; then
+            echo "⏭️ Tag ${VTAG} already exists, skipping release process"
+            echo "should-release=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Tag ${VTAG} does not exist, proceeding with release"
+            echo "should-release=true" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Build project
+        if: steps.version-check.outputs.should-release == 'true'
+        run: |
+          echo "🔨 Building project for version ${{ env.VTAG }}"
+          cargo build --release --locked --all-features
+          
+      - name: Create tarball
+        if: steps.version-check.outputs.should-release == 'true'
+        run: |
+          cd target/release
+          tar -czf ${{ env.PROJECT_NAME }}-mac.tar.gz ${{ env.PROJECT_NAME }}
+          cd ../..
+          
+      - name: Create tag and release
+        if: steps.version-check.outputs.should-release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure git for the action
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          echo "🏷️ Creating tag ${{ env.VTAG }}"
+          git tag "${{ env.VTAG }}"
+          git push origin "${{ env.VTAG }}"
+          
+          echo "🚀 Creating release ${{ env.VTAG }}"
+          gh release create "${{ env.VTAG }}" \
+            --title "Release ${{ env.VTAG }}" \
+            --notes "${{ env.DESC }}" \
+            ./target/release/${{ env.PROJECT_NAME }}-mac.tar.gz
+          
+      - name: Get hash of uploaded asset
+        if: steps.version-check.outputs.should-release == 'true'
+        run: |
+          # Calculate hash after upload
+          HASH=$(shasum -a 256 ./target/release/${{ env.PROJECT_NAME }}-mac.tar.gz | awk '{print $1}')
+          echo "HASH=${HASH}" >> $GITHUB_ENV
+          
+      - name: Checkout Homebrew tap repository
+        if: steps.version-check.outputs.should-release == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: sethrollinsbah/homebrew-sqlk
+          path: homebrew-sqlk
+          token: ${{ secrets.BREW_SQLK_BOT }}
+          
+      - name: Update Homebrew formula file
+        if: steps.version-check.outputs.should-release == 'true'
+        run: |
+          cd homebrew-sqlk
+          
+          # Remove existing formula file
+          rm -f "${{ env.PROJECT_NAME }}.rb"
+          
+          # Create proper class name (capitalize and handle hyphens)
+          PROJECT_CLASS_NAME=$(echo "${{ env.PROJECT_NAME }}" | sed 's/-/_/g' | awk '{print toupper(substr($0,1,1))substr($0,2)}')
+          
+          echo "📝 Creating Homebrew formula for ${PROJECT_CLASS_NAME}"
+          
+          # Create the new formula file directly with variables
+          cat > "${{ env.PROJECT_NAME }}.rb" << EOF
+          class ${PROJECT_CLASS_NAME} < Formula
+            desc "${{ env.DESC }}"
+            homepage "${{ env.HOMEPAGE }}"
+            url "https://github.com/sethrollinsbah/sqlk/releases/download/${{ env.VTAG }}/${{ env.PROJECT_NAME }}-mac.tar.gz"
+            sha256 "${{ env.HASH }}"
+            version "${{ env.VERSION }}"
+          
+            def install
+              bin.install "${{ env.PROJECT_NAME }}"
+            end
+          end
+          EOF
+          
+      - name: Commit and push new formula
+        if: steps.version-check.outputs.should-release == 'true'
+        run: |
+          cd homebrew-sqlk
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            echo "📤 Committing and pushing formula update"
+            git commit -m "chore(formula): automated update to ${{ env.VTAG }}"
+            git push
+          fi
+          
+      - name: Summary
+        run: |
+          if [ "${{ steps.version-check.outputs.should-release }}" = "true" ]; then
+            echo "✅ Successfully created release ${{ env.VTAG }} and updated Homebrew formula"
+          else
+            echo "⏭️ Skipped release process - tag ${{ env.VTAG }} already exists"
+          fi
