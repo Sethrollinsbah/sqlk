@@ -61,47 +61,45 @@ impl TableViewer {
                 temp_items.insert(0, highlighted);
             }
             items_to_show = temp_items;
-        } else {
-            if let Some((idx, item_data)) = highlighted_item_info {
-                if idx < max_items - 1 {
-                    let mut temp_items: Vec<_> =
-                        sorted_items.iter().take(max_items - 1).cloned().collect();
+        } else if let Some((idx, item_data)) = highlighted_item_info {
+            if idx < max_items - 1 {
+                let mut temp_items: Vec<_> =
+                    sorted_items.iter().take(max_items - 1).cloned().collect();
 
-                    if let Some(pos) = temp_items.iter().position(|(l, _)| l == value_to_highlight)
-                    {
-                        let highlighted = temp_items.remove(pos);
-                        temp_items.insert(0, highlighted);
-                    }
+                if let Some(pos) = temp_items.iter().position(|(l, _)| l == value_to_highlight)
+                {
+                    let highlighted = temp_items.remove(pos);
+                    temp_items.insert(0, highlighted);
+                }
 
-                    let others_count: usize = sorted_items
-                        .iter()
-                        .skip(max_items - 1)
-                        .map(|(_, c)| *c)
-                        .sum();
+                let others_count: usize = sorted_items
+                    .iter()
+                    .skip(max_items - 1)
+                    .map(|(_, c)| *c)
+                    .sum();
 
-                    items_to_show = temp_items;
+                items_to_show = temp_items;
+                items_to_show.push(("<Others>".to_string(), others_count));
+            } else {
+                items_to_show.push(item_data.clone());
+
+                let other_top_items = sorted_items
+                    .iter()
+                    .filter(|(label, _)| label != value_to_highlight)
+                    .take(max_items - 2)
+                    .cloned();
+
+                items_to_show.extend(other_top_items);
+
+                let others_count: usize = stats
+                    .value_counts
+                    .iter()
+                    .filter(|(label, _)| !items_to_show.iter().any(|(l, _)| l == *label))
+                    .map(|(_, count)| *count)
+                    .sum();
+
+                if others_count > 0 {
                     items_to_show.push(("<Others>".to_string(), others_count));
-                } else {
-                    items_to_show.push(item_data.clone());
-
-                    let other_top_items = sorted_items
-                        .iter()
-                        .filter(|(label, _)| label != value_to_highlight)
-                        .take(max_items - 2)
-                        .cloned();
-
-                    items_to_show.extend(other_top_items);
-
-                    let others_count: usize = stats
-                        .value_counts
-                        .iter()
-                        .filter(|(label, _)| !items_to_show.iter().any(|(l, _)| l == *label))
-                        .map(|(_, count)| *count)
-                        .sum();
-
-                    if others_count > 0 {
-                        items_to_show.push(("<Others>".to_string(), others_count));
-                    }
                 }
             }
         }
