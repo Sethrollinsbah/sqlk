@@ -13,7 +13,7 @@ use crate::{
 
 impl UI {
     pub fn render_search_input(&self, f: &mut Frame, app: &App) {
-        let area = centered_rect(60, 8, f.area());
+        let area = centered_rect(60, 20, f.area());
         f.render_widget(Clear, area);
 
         let chunks = Layout::default()
@@ -35,12 +35,14 @@ impl UI {
             );
         f.render_widget(title, chunks[0]);
 
+        // The text to display in the input box
         let input_text = if app.search_input.is_empty() {
             "Type your search query..."
         } else {
-            &app.search_input
+            app.search_input.as_str()
         };
 
+        // The style for the text
         let input_style = if app.search_input.is_empty() {
             Style::default().fg(Color::DarkGray)
         } else {
@@ -77,17 +79,14 @@ impl UI {
 
         f.render_widget(help_text, chunks[2]);
 
-        if !app.search_input.is_empty() {
-            let cursor_x = chunks[1].x + 1 + app.search_input.len() as u16;
-            let cursor_y = chunks[1].y + 1;
-
-            if cursor_x < chunks[1].x + chunks[1].width - 1 {
-                let pos = Position {
-                    x: cursor_x,
-                    y: cursor_y,
-                };
-                f.set_cursor_position(pos);
+        // Position the cursor at the end of the input text
+        f.set_cursor_position(
+            Position {
+            // x-coordinate: start of the block + border + text length
+            x: chunks[1].x + app.search_input.len() as u16 + 1,
+            // y-coordinate: start of the block + top border
+            y: chunks[1].y + 1,
             }
-        }
+        );
     }
 }
