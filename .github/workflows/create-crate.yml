@@ -1,0 +1,69 @@
+name: Publish to Cargo
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  publish-cargo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
+        
+      - name: Get version and check if already published
+        id: version-check
+        run: |
+          PROJECT_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
+          VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          
+          echo "PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          
+          echo "📦 Checking if ${PROJECT_NAME} v${VERSION} is already published to crates.io"
+          
+          if curl -s "https://crates.io/api/v1/crates/${PROJECT_NAME}" | jq -e ".versions[] | select(.num == \"${VERSION}\")" > /dev/null; then
+            echo "⏭️ Version ${VERSION} is already published to crates.io"
+            echo "should-publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Version ${VERSION} is not published, proceeding with publish"
+            echo "should-publish=true" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Run tests
+        if: steps.version-check.outputs.should-publish == 'true'
+        run: |
+          echo "🧪 Running tests before publishing"
+          cargo test --all-features
+          
+      - name: Check package
+        if: steps.version-check.outputs.should-publish == 'true'
+        run: |
+          echo "📋 Checking package before publishing"
+          cargo check --all-features
+          cargo package --list
+          
+      - name: Publish to crates.io
+        if: steps.version-check.outputs.should-publish == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REG }}
+        run: |
+          echo "🚀 Publishing ${{ env.PROJECT_NAME }} v${{ env.VERSION }} to crates.io"
+          cargo publish -p sqlk
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.version-check.outputs.should-publish }}" = "true" ]; then
+            echo "✅ Successfully published ${{ env.PROJECT_NAME }} v${{ env.VERSION }} to crates.io"
+            echo "🔗 https://crates.io/crates/${{ env.PROJECT_NAME }}"
+          else
+            echo "⏭️ Skipped publishing - ${{ env.PROJECT_NAME }} v${{ env.VERSION }} already exists on crates.io"
+          fi
