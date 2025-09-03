@@ -29,7 +29,7 @@ impl ConfigLoader {
         let config_path = self.config_dir.join("config.toml");
         if config_path.exists() {
             config = self.load_config_file(&config_path)?;
-            config.env_file = env_file.to_path_buf(); 
+            config.env_file = env_file.to_path_buf();
         }
 
         config.database = self.load_database_config(env_file)?;

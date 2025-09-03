@@ -51,7 +51,7 @@ impl TableViewer {
             KeyCode::Char('N') => self.prev_search_match(1),
 
             KeyCode::Char('c') => {
-                let bar_width = 30; 
+                let bar_width = 30;
                 self.toggle_chart(bar_width);
             }
 

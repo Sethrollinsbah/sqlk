@@ -24,9 +24,12 @@ impl App {
             }
             KeyCode::Enter => {
                 if let Some(viewer) = &mut self.table_viewer {
-                    viewer.search( &self.search_input, &mut self.ui);
+                    viewer.search(&self.search_input, &mut self.ui);
                 }
-                self.current_mode = AppMode::TableViewer;
+                    // Correctly reset search input and cursor position
+    self.search_input.clear();
+    self.search_cursor_position = 0;
+    self.current_mode = AppMode::TableViewer;
             }
             KeyCode::Char(c) => {
                 // Insert character at cursor position
@@ -34,10 +37,10 @@ impl App {
                 self.search_cursor_position += 1;
             }
             KeyCode::Backspace => {
-                // Remove character at cursor position
                 if self.search_cursor_position > 0 {
+                    self.search_input
+                        .remove(Into::<usize>::into(self.search_cursor_position) - 1);
                     self.search_cursor_position -= 1;
-                    self.search_input.remove(self.search_cursor_position.into());
                 }
             }
             KeyCode::Esc => {

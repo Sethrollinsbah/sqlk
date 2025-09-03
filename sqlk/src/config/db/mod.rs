@@ -66,7 +66,7 @@ impl DatabaseType {
         match self {
             DatabaseType::PostgreSQL => 5432,
             DatabaseType::MySQL => 3306,
-            DatabaseType::SQLite => 0, 
+            DatabaseType::SQLite => 0,
         }
     }
 }

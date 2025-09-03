@@ -18,7 +18,13 @@ impl DatabaseUrlParser {
     fn extract_value(value_part: &str) -> Option<String> {
         let trimmed = value_part.trim();
 
-        if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() >= 2 && trimmed.starts_with('\'') && trimmed.ends_with('\'') && trimmed.len() >= 2 {
+        if trimmed.starts_with('"')
+            && trimmed.ends_with('"')
+            && trimmed.len() >= 2
+            && trimmed.starts_with('\'')
+            && trimmed.ends_with('\'')
+            && trimmed.len() >= 2
+        {
             Some(trimmed[1..trimmed.len() - 1].to_string())
         } else if !trimmed.is_empty() {
             Some(trimmed.to_string())

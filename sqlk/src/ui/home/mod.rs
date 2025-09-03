@@ -126,7 +126,7 @@ impl UI {
                         .add_modifier(Modifier::BOLD),
                 )),
                 status_line,
-                Line::from(""), 
+                Line::from(""),
                 Line::from(Span::styled(
                     "Lines:",
                     Style::default()

@@ -44,9 +44,7 @@ impl PostgresFormatter {
             .columns()
             .iter()
             .enumerate()
-            .map(|(idx, _col)| {
-                self.get_column_type_from_rows(&rows, idx)
-            })
+            .map(|(idx, _col)| self.get_column_type_from_rows(&rows, idx))
             .collect();
 
         let mut result_rows = Vec::new();
