@@ -10,18 +10,39 @@ use crate::{
 impl App {
     pub async fn handle_searching_keys(&mut self, key: KeyEvent) -> Result<()> {
         match key.code {
+            KeyCode::Left => {
+                // Move cursor to the left
+                if self.search_cursor_position > 0 {
+                    self.search_cursor_position -= 1;
+                }
+            }
+            KeyCode::Right => {
+                // Move cursor to the right
+                if Into::<usize>::into(self.search_cursor_position) < self.search_input.len() {
+                    self.search_cursor_position += 1;
+                }
+            }
             KeyCode::Enter => {
                 if let Some(viewer) = &mut self.table_viewer {
-                    viewer.search(&self.search_input);
+                    viewer.search( &self.search_input, &mut self.ui);
                 }
                 self.current_mode = AppMode::TableViewer;
             }
-            KeyCode::Char(c) => self.search_input.push(c),
+            KeyCode::Char(c) => {
+                // Insert character at cursor position
+                self.search_input.insert(self.search_cursor_position.into(), c);
+                self.search_cursor_position += 1;
+            }
             KeyCode::Backspace => {
-                self.search_input.pop();
+                // Remove character at cursor position
+                if self.search_cursor_position > 0 {
+                    self.search_cursor_position -= 1;
+                    self.search_input.remove(self.search_cursor_position.into());
+                }
             }
             KeyCode::Esc => {
                 self.search_input.clear();
+                self.search_cursor_position = 0;
                 self.current_mode = AppMode::TableViewer;
             }
             _ => {}

@@ -24,6 +24,7 @@ pub struct App {
     pub table_viewer: Option<TableViewer>,
     pub foreign_key_viewer: Option<TableViewer>,
     pub search_input: String,
+    pub search_cursor_position: u16,
     pub movement_multiplier: Option<usize>,
     pub ui: UI,
     pub should_quit: bool,

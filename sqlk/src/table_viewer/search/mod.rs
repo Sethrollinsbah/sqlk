@@ -1,4 +1,6 @@
-use crate::table_viewer::{CellPosition, TableViewer};
+use regex::Regex;
+
+use crate::{table_viewer::{CellPosition, TableViewer}, ui::{ToastType, UI}};
 
 #[derive(Debug, Default)]
 pub struct SearchState {
@@ -8,7 +10,7 @@ pub struct SearchState {
 }
 
 impl TableViewer {
-    pub fn search(&mut self, term: &str) {
+    pub fn search(&mut self, term: &str, ui: &mut UI) {
         self.search_state.term = term.to_string();
         self.search_state.matches.clear();
         self.search_state.current_match = 0;
@@ -17,10 +19,13 @@ impl TableViewer {
             return;
         }
 
-        let search_term_lower = term.to_lowercase();
+        let Ok(re) = Regex::new(&format!("(?i){}", term)) else {
+            return;
+        };
+        
         for (row_idx, row) in self.data.rows.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
-                if cell.to_lowercase().contains(&search_term_lower) {
+                if re.is_match(cell) {
                     self.search_state.matches.push(CellPosition {
                         row: row_idx,
                         col: col_idx,
@@ -28,6 +33,8 @@ impl TableViewer {
                 }
             }
         }
+
+        ui.add_toast(format!("Found {:?} matches", self.search_state.matches.iter().len()), ToastType::Info);
 
         if !self.search_state.matches.is_empty() {
             self.jump_to_match(0);

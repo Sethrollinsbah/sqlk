@@ -83,7 +83,7 @@ impl UI {
         f.set_cursor_position(
             Position {
             // x-coordinate: start of the block + border + text length
-            x: chunks[1].x + app.search_input.len() as u16 + 1,
+            x: chunks[1].x + app.search_cursor_position + 1,
             // y-coordinate: start of the block + top border
             y: chunks[1].y + 1,
             }
