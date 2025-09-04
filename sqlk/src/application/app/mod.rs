@@ -1,6 +1,7 @@
 use anyhow::Result;
 use cli_clipboard::ClipboardContext;
 use std::path::PathBuf;
+use tokio::sync::OnceCell;
 use tokio::{sync::mpsc, task::JoinHandle};
 
 use crate::application::state::{AppMessage, AppMode, StartupResult};
@@ -15,7 +16,7 @@ use crate::{
 
 pub struct App {
     pub config: Config,
-    pub db_manager: DatabaseManager,
+    pub db_manager: OnceCell<DatabaseManager>,
     pub current_mode: AppMode,
     pub previous_mode: Option<AppMode>,
     pub current_file: Option<PathBuf>,
@@ -61,11 +62,11 @@ impl App {
         Ok(())
     }
 
-    pub fn spawn_startup_tasks(&self) -> JoinHandle<Result<StartupResult>> {
+    pub async fn spawn_startup_tasks(&self) -> JoinHandle<Result<StartupResult>> {
         let current_file = self.current_file.clone();
         let pending_query = self.pending_query.clone();
         let config = self.config.clone();
-        let db_manager = self.db_manager.clone();
+        let db_manager_cell = self.db_manager.clone();
 
         tokio::spawn(async move {
             let mut result = StartupResult {
@@ -99,27 +100,34 @@ impl App {
                 }
             }
 
+            let db_manager = db_manager_cell
+                .get_or_try_init(|| async {
+                    DatabaseManager::new(&config).await
+                })
+                .await
+                .map_err(|e| anyhow::anyhow!("Database manager initialization failed: {}", e))?;
+
             if let Some(query) = &pending_query &&
-                !query.trim().is_empty() {
-                    match db_manager.execute_query(query).await {
-                        Ok(query_result) => {
-                            match TableViewer::new(query_result, &config, &db_manager) {
-                                Ok(viewer) => {
-                                    result.table_viewer = Some(viewer);
-                                    result.success_message =
-                                        Some("Query executed successfully".to_string());
-                                }
-                                Err(e) => {
-                                    result.error_message =
-                                        Some(format!("Failed to create table viewer: {}", e));
-                                }
+            !query.trim().is_empty() {
+                match db_manager.execute_query(query).await {
+                    Ok(query_result) => {
+                        match TableViewer::new(query_result, &config, db_manager) {
+                            Ok(viewer) => {
+                                result.table_viewer = Some(viewer);
+                                result.success_message =
+                                    Some("Query executed successfully".to_string());
+                            }
+                            Err(e) => {
+                                result.error_message =
+                                    Some(format!("Failed to create table viewer: {}", e));
                             }
                         }
-                        Err(e) => {
-                            result.error_message = Some(format!("Query execution failed: {}", e));
-                        }
+                    }
+                    Err(e) => {
+                        result.error_message = Some(format!("Query execution failed: {}", e));
                     }
                 }
+            }
 
             Ok(result)
         })

@@ -19,7 +19,9 @@ pub struct Config {
     pub matrix: MatrixConfig,
     pub foreign_keys: ForeignKeyConfig,
     pub database: DatabaseConfig,
+    pub toast_level: String
 }
+
 
 impl Default for Config {
     fn default() -> Self {
@@ -28,13 +30,14 @@ impl Default for Config {
             matrix: MatrixConfig::default(),
             foreign_keys: ForeignKeyConfig::default(),
             database: DatabaseConfig::default(),
+            toast_level: String::from("ERROR")
         }
     }
 }
 
 impl Config {
-    pub fn load(env_file: &std::path::Path) -> Result<Self> {
-        ConfigLoader::new().load(env_file)
+    pub fn load(env_file: &std::path::Path, toast_level: String) -> Result<Self> {
+        ConfigLoader::new().load(env_file, toast_level)
     }
 
     pub fn save(&self) -> Result<()> {

@@ -32,8 +32,7 @@ help:
 
 run-app:
 	@echo "$(BLUE)🚀 Running app...$(NC)"
-	@source ${env} && cargo run -p sqlk -- --env ${env} --file ${file}
-	# Example: make run-app env=./examples/postgres/.env file=./examples/postgres/schema.sql
+	@source ${env} && cargo run -p sqlk -- --env ${env} --file ${file} --toast-level ${level}
 
 fmt:
 	@echo "$(BLUE)🔎 Checking formatting...$(NC)"

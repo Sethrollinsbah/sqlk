@@ -20,7 +20,7 @@ pub struct DatabaseManager {
 
 impl DatabaseManager {
     pub async fn new(config: &Config) -> Result<Self> {
-        let client = create_database_client(config).await?;
+        let client = Self::create_database_client(config).await?;
         Ok(Self { client })
     }
 
@@ -35,9 +35,9 @@ impl DatabaseManager {
     pub fn get_foreign_key_info(&self, column_name: &str) -> Result<&ForeignKeyInfo> {
         self.client.get_foreign_key_info(column_name)
     }
-}
 
-async fn create_database_client(config: &Config) -> Result<Arc<dyn DatabaseClient>> {
-    let postgres_client = crate::database::postgres::PostgresClient::new(config).await?;
-    Ok(Arc::new(postgres_client))
+    async fn create_database_client(config: &Config) -> Result<Arc<dyn DatabaseClient>> {
+        let postgres_client = crate::database::postgres::PostgresClient::new(config).await?;
+        Ok(Arc::new(postgres_client))
+    }
 }

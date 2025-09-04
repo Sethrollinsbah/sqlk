@@ -23,24 +23,27 @@ pub struct UI {
     pub list_state: ListState,
     pub table_state: TableState,
     pub toast_messages: Vec<ToastMessage>,
+    pub toast_type: ToastType,
     pub last_mouse_position: Option<(u16, u16)>,
     pub spinner_frame: usize,
 }
 
 impl Default for UI {
     fn default() -> Self {
-        Self::new()
+        Self::new("DEBUG".to_string())
     }
 }
 
 impl UI {
-    pub fn new() -> Self {
+    pub fn new(toast_level: String) -> Self {
+        let toast_type: ToastType = ToastType::from(toast_level);
         Self {
             list_state: ListState::default(),
             table_state: TableState::default(),
             toast_messages: Vec::new(),
             last_mouse_position: None,
             spinner_frame: 0,
+            toast_type
         }
     }
 

@@ -6,6 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph, Wrap},
     Frame,
 };
+use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 
 use crate::ui::UI;
@@ -19,12 +20,59 @@ pub struct ToastMessage {
     pub position: ToastPosition,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ToastType {
+    Debug,
     Info,
     Success,
     Warning,
     Error,
+    None
+}
+
+impl From<String> for ToastType {
+    fn from(value: std::string::String) -> Self {
+        let red = "\x1b[31m";
+        let green = "\x1b[32m";
+        let bold = "\x1b[1m";
+        let end = "\x1b[0m";
+        let error_msg = format!(
+        "
+{red}{bold}
+ToastType Error:{end} 
+    {red}\"{value}\" is not a valid error type{end}{green}
+{green}{bold}
+Available toast levels are:{end}{green}
+-    DEBUG
+-    INFO 
+-    SUCCESS 
+-    WARNING 
+-    ERROR 
+-    NONE{end}
+        ");
+        match value.as_str() {
+            "DEBUG" => ToastType::Debug,
+            "INFO" => ToastType::Info,
+            "SUCCESS" => ToastType::Success,
+            "WARNING" => ToastType::Warning,
+            "ERROR" => ToastType::Error,
+            "NONE" => ToastType::None,
+            _ => panic!("{error_msg}")
+        }
+    }
+}
+
+impl ToastType {
+    pub fn get_log_level_value(&self) -> u8 {
+        match self {
+            ToastType::Debug => 0,
+            ToastType::Info => 1,
+            ToastType::Success => 2,
+            ToastType::Warning => 3,
+            ToastType::Error => 4,
+            ToastType::None => 5
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -76,15 +124,19 @@ impl ToastMessage {
             ToastType::Success => Style::default().fg(Color::Green).bg(Color::Black),
             ToastType::Warning => Style::default().fg(Color::Yellow).bg(Color::Black),
             ToastType::Error => Style::default().fg(Color::Red).bg(Color::Black),
+            ToastType::Debug => Style::default().fg(Color::LightBlue).bg(Color::Black),
+            ToastType::None =>  panic!("None toast type")
         }
     }
 
     pub fn get_icon(&self) -> &str {
         match self.message_type {
-            ToastType::Info => "ℹ",
-            ToastType::Success => "✓",
-            ToastType::Warning => "⚠",
-            ToastType::Error => "✗",
+            ToastType::Info => "ℹ️",
+            ToastType::Success => "✅",
+            ToastType::Warning => "⚠️",
+            ToastType::Error => "❌",
+            ToastType::Debug => "🔧",
+            ToastType::None => panic!("None toast type")
         }
     }
 
@@ -123,6 +175,10 @@ impl UI {
 
     pub fn render_toast_notifications(&self, f: &mut Frame) {
         for (index, toast) in self.toast_messages.iter().enumerate() {
+            if toast.message_type.get_log_level_value() < self.toast_type.get_log_level_value() {
+                continue; 
+            }
+
             let toast_area = self.calculate_toast_area(&toast.position, index, f.area());
 
             if toast_area.width < 10 || toast_area.height < 1 {
@@ -163,6 +219,8 @@ impl UI {
                     ToastType::Warning => Style::default().fg(Color::Yellow),
                     ToastType::Success => Style::default().fg(Color::Green),
                     ToastType::Info => Style::default().fg(Color::Cyan),
+                    ToastType::Debug => Style::default().fg(Color::LightBlue),
+                    ToastType::None => panic!("None toast type")
                 }
             };
 

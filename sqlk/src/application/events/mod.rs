@@ -18,8 +18,9 @@ use crate::{
     ui::ToastType,
 };
 
+// In your App::run method:
 impl App {
-    pub async fn run(&mut self) -> Result<()> {
+    pub async fn run(&mut self, start_time: Instant) -> Result<()> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
         execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -38,6 +39,16 @@ impl App {
             self.perform_startup_tasks_sync().await?;
         }
 
+        let ttfb = Instant::now().duration_since(start_time);
+        self.ui.add_toast(format!("Time to First Byte: {:?}", ttfb), ToastType::Debug);
+
+        // This is the first draw of the UI.
+        let mut ui = std::mem::take(&mut self.ui);
+        terminal.draw(|f| {
+            ui.render(f, self);
+        })?;
+        self.ui = ui;
+
         let mut last_tick = Instant::now();
         let tick_rate = Duration::from_millis(16);
 
@@ -52,6 +63,7 @@ impl App {
                 last_tick = Instant::now();
             }
 
+            // The rest of the `terminal.draw` calls happen here inside the loop.
             let mut ui = std::mem::take(&mut self.ui);
             terminal.draw(|f| {
                 ui.render(f, self);
@@ -113,7 +125,7 @@ impl App {
 
             if !self.startup_complete && self.startup_task.is_none() && matrix.get_progress() >= 0.3
             {
-                self.startup_task = Some(self.spawn_startup_tasks());
+                self.startup_task = Some(self.spawn_startup_tasks().await);
             }
         }
 
@@ -183,4 +195,3 @@ impl App {
         Ok(())
     }
 }
-

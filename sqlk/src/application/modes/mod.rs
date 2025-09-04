@@ -26,14 +26,15 @@ impl App {
                 if let Some(viewer) = &mut self.table_viewer {
                     viewer.search(&self.search_input, &mut self.ui);
                 }
-                    // Correctly reset search input and cursor position
-    self.search_input.clear();
-    self.search_cursor_position = 0;
-    self.current_mode = AppMode::TableViewer;
+                // Correctly reset search input and cursor position
+                self.search_input.clear();
+                self.search_cursor_position = 0;
+                self.current_mode = AppMode::TableViewer;
             }
             KeyCode::Char(c) => {
                 // Insert character at cursor position
-                self.search_input.insert(self.search_cursor_position.into(), c);
+                self.search_input
+                    .insert(self.search_cursor_position.into(), c);
                 self.search_cursor_position += 1;
             }
             KeyCode::Backspace => {

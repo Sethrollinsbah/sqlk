@@ -1,4 +1,4 @@
-# config.toml - Configuration file for sqlk
+# .sqlk.toml - Configuration file for sqlk
 
 # Environment file path (relative to working directory)
 env_file = ".env.local"
