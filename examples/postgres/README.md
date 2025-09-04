@@ -27,7 +27,7 @@ following files into the root directory:
     DATABASE_URL="postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"
     ```
 
-* ```config.toml
+* ```.sqlk.toml
   # Environment file path (relative to working directory)
   # These are all of the default options, but configure as you wish
   env_file = ".env"
@@ -70,7 +70,7 @@ following files into the root directory:
 
 3. **Explore the database.**
 
-* If .env, sql file, and config.toml were placed in root directory
+* If .env, sql file, and .sqlk.toml were placed in root directory
 
     ```bash
     sqlk

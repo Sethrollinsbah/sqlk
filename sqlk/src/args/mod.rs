@@ -16,6 +16,10 @@ pub struct Args {
     #[arg(long)]
     pub no_matrix: bool,
 
+    /// Change toast level
+    #[arg(short, long, default_value = "INFO")]
+    pub toast_level: String,
+
     /// Direct SQL query to execute
     #[arg(short, long)]
     pub query: Option<String>,

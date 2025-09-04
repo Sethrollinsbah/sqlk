@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::{
     application::app::App,
-    database::{ForeignKeyInfo, QueryResult},
+    database::{DatabaseManager, ForeignKeyInfo, QueryResult},
     table_viewer::TableViewer,
 };
 
@@ -25,8 +25,19 @@ impl TableViewer {
                 return Ok(None);
             }
 
+            let db_man_clone = app.db_manager.clone();
+            // Use `get_or_try_init` on the cloned `OnceCell` inside the spawned task.
+            let db_manager = db_man_clone
+                .get_or_try_init(|| async {
+                    // This is the correct way to initialize the DatabaseManager.
+                    DatabaseManager::new(&app.config).await
+                })
+                .await
+                .map_err(|e| anyhow::anyhow!("Database manager initialization failed: {}", e))
+                .expect("Failed to get db_manager");
+
             if let Some(fk_info) = self.foreign_keys.get(&self.current_col) {
-                match app.db_manager.lookup_foreign_key(&header, &value).await {
+                match db_manager.lookup_foreign_key(&header, &value).await {
                     Ok(lookup_result) => Ok(Some(ForeignKeyLookupResult {
                         foreign_key_info: fk_info.clone(),
                         lookup_data: lookup_result,
@@ -50,8 +61,19 @@ impl TableViewer {
                 return Ok(None);
             }
 
-            let result = app.db_manager.lookup_foreign_key(&header, &value).await?;
-            let new_viewer = TableViewer::new(result, &app.config, &app.db_manager)?;
+            let db_man_clone = app.db_manager.clone();
+            // Use `get_or_try_init` on the cloned `OnceCell` inside the spawned task.
+            let db_manager = db_man_clone
+                .get_or_try_init(|| async {
+                    // This is the correct way to initialize the DatabaseManager.
+                    DatabaseManager::new(&app.config).await
+                })
+                .await
+                .map_err(|e| anyhow::anyhow!("Database manager initialization failed: {}", e))
+                .expect("Failed to get db_manager");
+
+            let result = db_manager.lookup_foreign_key(&header, &value).await?;
+            let new_viewer = TableViewer::new(result, &app.config, db_manager)?;
             Ok(Some(new_viewer))
         } else {
             Ok(None)

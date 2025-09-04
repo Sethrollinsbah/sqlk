@@ -20,13 +20,14 @@ impl ConfigLoader {
         Self { config_dir }
     }
 
-    pub fn load(&self, env_file: &Path) -> Result<Config> {
+    pub fn load(&self, env_file: &Path, toast_level: String) -> Result<Config> {
         let mut config = Config {
             env_file: env_file.to_path_buf(),
+            toast_level,
             ..Default::default()
         };
 
-        let config_path = self.config_dir.join("config.toml");
+        let config_path = self.config_dir.join("sqlk.toml");
         if config_path.exists() {
             config = self.load_config_file(&config_path)?;
             config.env_file = env_file.to_path_buf();
@@ -40,7 +41,7 @@ impl ConfigLoader {
     pub fn save(&self, config: &Config) -> Result<()> {
         std::fs::create_dir_all(&self.config_dir)?;
 
-        let config_path = self.config_dir.join("config.toml");
+        let config_path = self.config_dir.join("sqlk.toml");
         let config_content = toml::to_string_pretty(config)?;
         std::fs::write(config_path, config_content)?;
 
@@ -85,7 +86,7 @@ impl ConfigLoader {
     }
 
     pub fn get_config_path(&self) -> PathBuf {
-        self.config_dir.join("config.toml")
+        self.config_dir.join(".sqlk.toml")
     }
 
     pub fn config_exists(&self) -> bool {

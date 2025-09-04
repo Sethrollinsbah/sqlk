@@ -1,10 +1,13 @@
+
+use tokio::sync::OnceCell;
+
 use anyhow::Result;
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use tokio::sync::mpsc;
 
 use crate::application::app::App;
 use crate::args::Args;
-use crate::database::DatabaseManager;
+// use crate::database::DatabaseManager;
 use crate::table_viewer::TableViewer;
 use crate::ui::UI;
 use crate::{
@@ -49,10 +52,10 @@ impl App {
             .find_query_at_line(&self.query_blocks, current_line_1_based)
     }
 
-    pub async fn new(args: Args) -> Result<Self> {
-        let config = Config::load(&args.env)?;
-        let db_manager = DatabaseManager::new(&config).await?;
-
+    pub fn new(args: Args) -> Result<Self> {
+        let config = Config::load(&args.env, args.toast_level)?;
+        let toast_level: String = config.clone().toast_level.clone();
+        let db_manager = OnceCell::new(); 
         let (app_tx, app_rx) = mpsc::channel(1);
         let app = Self {
             config,
@@ -66,7 +69,7 @@ impl App {
             foreign_key_viewer: None,
             search_input: String::new(),
             movement_multiplier: None,
-            ui: UI::new(),
+            ui: UI::new(toast_level),
             should_quit: false,
             cursor_line: 0,
             app_tx,

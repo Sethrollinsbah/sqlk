@@ -91,8 +91,8 @@ DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
 
 SQLK uses a configuration file located at:
 
-- **Linux/macOS**: `~/.config/sqlk/config.toml`
-- **Windows**: `%APPDATA%\sqlk\config.toml`
+- **Linux/macOS**: `~/.config/sqlk/.sqlk.toml`
+- **Windows**: `%APPDATA%\sqlk\.sqlk.toml`
 
 Example configuration:
 
